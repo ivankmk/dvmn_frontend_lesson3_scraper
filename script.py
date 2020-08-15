@@ -25,12 +25,12 @@ def get_title_and_author(soup):
 def get_cover_fullpath(soup):
     base = 'http://tululu.org'
     img_name = soup.find('div', {'class': 'bookimage'}).find('img')['src']
-    if 'nopic.gif' not in img_name:
-        return urljoin(base, img_name)
+    
+    return urljoin(base, img_name)
 
 
 
-def download_txt(id, filename, folder=None):
+def download_txt(book_id, filename, folder=None):
     """Функция для скачивания текстовых файлов.
     Args:
         url (str): Cсылка на текст, который хочется скачать.
@@ -39,18 +39,30 @@ def download_txt(id, filename, folder=None):
     Returns:
         str: Путь до файла, куда сохранён текст.
     """
-    filename_cleaned = clean_filename(id, filename)
+    filename_cleaned = clean_filename(book_id, filename)
     folder_to_save = folder or 'books'
-    file_url = f'http://tululu.org/txt.php?id={id}'
+    file_url = f'http://tululu.org/txt.php?id={book_id}'
     
     os.makedirs(folder_to_save, exist_ok=True)
-
     response = requests.get(file_url, allow_redirects=False)
-
     full_path = os.path.join(folder_to_save, filename_cleaned)
+    
     if response.status_code == 200:
         data = response.text
         with open(f'{full_path}.txt', 'w') as f:
+            f.write(data)
+        return full_path
+
+
+def download_image(image_url, folder=None):
+    folder_to_save = folder or 'images'
+    os.makedirs(folder_to_save, exist_ok=True)
+    response = requests.get(image_url, allow_redirects=False)
+    full_path = os.path.join(folder_to_save, str(image_url.split('/')[-1]))
+
+    if response.status_code == 200:
+        data = response.content
+        with open(full_path, 'wb') as f:
             f.write(data)
         return full_path
 
@@ -61,4 +73,8 @@ if __name__ == "__main__":
         if book_soup:
             title_and_author = get_title_and_author(book_soup)
             if download_txt(book_id, title_and_author['title'], folder=None):
-                print(get_cover_fullpath(book_soup) or f'{book_id} does not have cover')
+                cover_img = get_cover_fullpath(book_soup)
+                if cover_img:
+                    download_image(cover_img, folder=None)
+
+                    
