@@ -4,14 +4,14 @@ import time
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 
-
 def get_book_soup(id):
     response = requests.get(f'http://tululu.org/b{id}/', allow_redirects=False)
     if response.status_code == 200:
-        return BeautifulSoup(response.text, 'lxml')
+        soup =  BeautifulSoup(response.text, 'lxml')
+        return soup
 
 
-def get_name_and_author(soup):
+def get_title_and_author(soup):
     title, author = soup.find('h1').text.split('::')
 
     return {
@@ -20,7 +20,7 @@ def get_name_and_author(soup):
     }
 
 
-def download_txt(url, filename, folder=None):
+def download_txt(id, filename, folder=None):
     """Функция для скачивания текстовых файлов.
     Args:
         url (str): Cсылка на текст, который хочется скачать.
@@ -29,33 +29,25 @@ def download_txt(url, filename, folder=None):
     Returns:
         str: Путь до файла, куда сохранён текст.
     """
-    filename_cleaned = sanitize_filename(filename)
+    filename_cleaned = f'{id}-{sanitize_filename(filename)}'
     folder_to_save = folder or 'books'
+    file_url = f'http://tululu.org/txt.php?id={id}'
     
     os.makedirs(folder_to_save, exist_ok=True)
 
-    response = requests.get(url, allow_redirects=False)
+    response = requests.get(file_url, allow_redirects=False)
 
     full_path = os.path.join(folder_to_save, filename_cleaned)
     if response.status_code == 200:
         data = response.text
-        with open(full_path, 'w') as f:
+        with open(f'{full_path}.txt', 'w') as f:
             f.write(data)
-        return full_path
+        print(full_path)
 
 if __name__ == "__main__":
-    
-    url = 'http://tululu.org/txt.php?id=1'
-
-    filepath = download_txt(url, 'Алиби')
-    print(filepath)  # Выведется books/Алиби.txt
-
-    filepath = download_txt(url, 'Али/би', folder='books/')
-    print(filepath)  # Выведется books/Алиби.txt
-
-    filepath = download_txt(url, 'Али\\би', folder='txt/')
-    print(filepath) 
-
- # Выведется txt/Алиби.txt
-    # book_soup = get_book_soup(1)
-    # get_name_and_author(book_soup)
+    for book_id in range(1, 11):
+        time.sleep(3)
+        book_soup = get_book_soup(book_id)
+        if book_soup:
+            title_and_author = get_title_and_author(book_soup)
+            download_txt(book_id, title_and_author['title'], folder=None)
