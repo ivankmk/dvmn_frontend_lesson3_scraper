@@ -28,6 +28,18 @@ def get_cover_fullpath(soup):
     
     return urljoin(base, img_name)
 
+def get_comments(soup):
+    all_comments = soup.findAll('div', {'class': 'texts'})
+    comments =  [
+        comment.find('span', {'class': 'black'}).text for comment in all_comments
+        ]
+    
+    return None if len(comments) == 0 else comments
+
+def get_genres(soup):
+    genres_html = soup.find('span', {'class': 'd_book'})
+    genres = [genre.text for genre in genres_html.findAll('a')]
+    return None if len(genres) == 0 else genres
 
 
 def download_txt(book_id, filename, folder=None):
@@ -71,10 +83,9 @@ if __name__ == "__main__":
         time.sleep(3)
         book_soup = get_book_soup(book_id)
         if book_soup:
-            title_and_author = get_title_and_author(book_soup)
-            if download_txt(book_id, title_and_author['title'], folder=None):
-                cover_img = get_cover_fullpath(book_soup)
-                if cover_img:
-                    download_image(cover_img, folder=None)
-
-                    
+            print(get_genres(book_soup))
+            # title_and_author = get_title_and_author(book_soup)
+            # if download_txt(book_id, title_and_author['title'], folder=None):
+            #     cover_img = get_cover_fullpath(book_soup)
+            #     if cover_img:
+            #         download_image(cover_img, folder=None)
