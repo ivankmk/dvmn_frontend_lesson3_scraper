@@ -96,7 +96,7 @@ if __name__ == "__main__":
                         help='Skip saving the images', type=bool,
                         required=False)
     parser.add_argument('--dest_folder', default='',
-                        help='Директория для хранения файлов',
+                        help='Folder for book saving',
                         type=str, required=False)
 
     args = parser.parse_args()
