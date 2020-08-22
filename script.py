@@ -48,14 +48,6 @@ def get_genres(soup):
 
 
 def download_txt(book_id, filename, skip_txt, folder=None):
-    """Функция для скачивания текстовых файлов.
-    Args:
-        url (str): Cсылка на текст, который хочется скачать.
-        filename (str): Имя файла, с которым сохранять.
-        folder (str): Папка, куда сохранять.
-    Returns:
-        str: Путь до файла, куда сохранён текст.
-    """
     if not skip_txt:
         filename_cleaned = clean_filename(book_id, filename)
         folder_to_save = folder or 'books'
