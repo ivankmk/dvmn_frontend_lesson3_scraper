@@ -12,9 +12,9 @@ pip install -r requirements.txt
 
 ### How to use
 ```
-python tululu.py --start_page xxx --end_page yyy
+python script.py --start_page xxx --end_page yyy
 ```
-If argument `end_page` will be skipped, scraper will check the latest page of the book category and will scrape untill then<br>
+If argument `end_page` will be skipped, scraper will check the latest page of the book category and will scrape until the end.<br>
 <br>
 
 Example of the json-db:
