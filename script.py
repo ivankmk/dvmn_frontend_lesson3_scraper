@@ -33,10 +33,8 @@ def get_title_and_author(soup):
     }
 
 
-def get_cover_fullpath(soup):
-    base = 'https://tululu.org/shots'
+def get_cover_fullpath(soup, base):
     img_name = soup.select_one('div.bookimage img')['src']
-
     return urljoin(base, img_name)
 
 
@@ -44,22 +42,21 @@ def get_comments(soup):
     comments = [
         comment.text for comment in soup.select('div.texts span.black')
     ]
-    return None if not comments else comments
+    return comments or None
 
 
 def get_genres(soup):
     genres = [genre.text for genre in soup.select('span.d_book a')]
-    return None if not genres else genres
+    return genres or None
 
 
-def download_txt(book_id, filename, folder=None):
+def download_txt(book_id, filename, folder='books'):
     filename_cleaned = f'{book_id}-{sanitize_filename(filename)}'
-    folder_to_save = folder or 'books'
     file_url = f'https://tululu.org/txt.php?id={book_id}'
 
-    os.makedirs(folder_to_save, exist_ok=True)
+    os.makedirs(folder, exist_ok=True)
     response = check_response(requests.get(file_url, allow_redirects=False, verify=False))
-    full_path = os.path.join(folder_to_save, filename_cleaned)
+    full_path = os.path.join(folder, filename_cleaned)
 
     if not response.status_code == 200:
         return
@@ -70,11 +67,10 @@ def download_txt(book_id, filename, folder=None):
     return full_path_with_ext
 
 
-def download_image(image_url, folder=None):
-    folder_to_save = folder or 'images'
-    os.makedirs(folder_to_save, exist_ok=True)
+def download_image(image_url, folder='images'):
+    os.makedirs(folder, exist_ok=True)
     response = check_response(requests.get(image_url, allow_redirects=False, verify=False))
-    full_path = os.path.join(folder_to_save, str(image_url.split('/')[-1]))
+    full_path = os.path.join(folder, str(image_url.split('/')[-1]))
 
     if not response.status_code == 200:
         return
@@ -146,7 +142,7 @@ def main():
                 book_id = book_url.split('/')[-2].replace('b', '')
                 book_path = None if args.skip_txt else download_txt(book_id, title_and_author['title'])
 
-                img_src = get_cover_fullpath(book_soup)
+                img_src = get_cover_fullpath(book_soup, book_url)
                 cover_link = None if args.skip_images else download_image(img_src)
                 logging.info('This book was saved: ', title_and_author['title'])
                 books_collection.append(
